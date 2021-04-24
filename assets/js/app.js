@@ -5,8 +5,8 @@ var svgHeight = 620;
 //set svg margin
 var margin = {
     top: 20,
-    bottom: 200,
     right: 40,
+    bottom: 200,
     left: 100
 };
 
@@ -37,6 +37,7 @@ function xScale(censusData, chosenxAxis) {
         d3.max(censusData, d=> d[chosenxAxis]) * 1.2
     ])
     .range([0, width]);
+
     return xLinearscale;
 }
 
@@ -72,7 +73,7 @@ function modifyAxesY(newYscale, yAxis){
 }
 
 //function to update circles
-function modifyCircles(circlesGroup, newXscale){
+function modifyCircles(circlesGroup, newXscale, chosenxAxis, newYscale, chosenyAxis){
     circlesGroup.transition()
     .duration(1000)
     .attr("cx",data=> newXscale(data[chosenxAxis]))
@@ -80,6 +81,16 @@ function modifyCircles(circlesGroup, newXscale){
     
     return circlesGroup;
 }
+//function to update labels
+function modifyText(textGroup, newXscale, chosenxAxis, newYscale, chosenyAxis){
+    textGroup.transition()
+    .duration(1000)
+    .attr("x", d => newXscale(d[chosenxAxis]))
+    .attr("y", d=> newYscale(d[chosenyAxis]));
+
+    return textGroup;
+}
+
 
 //grab data from csv and execute
 d3.csv("./assets/data/data.csv").then(function(censusData){
@@ -97,8 +108,8 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     });
 
     //create linear scales
-    var xLinearscale = xScale(censusData, chosenxAxis);
-    var yLinearscale = yScale(censusData, chosenyAxis);
+    var xLinearscale = xScale(censusData, chosenxAxis, width);
+    var yLinearscale = yScale(censusData, chosenyAxis, height);
 
     //create intial axis 
     var bottomAxis = d3.axisBottom(xLinearscale);
@@ -123,28 +134,28 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     .classed("stateCircle", true)
     .attr("cx", d=> xLinearscale(d[chosenxAxis]))
     .attr("cy", d=> yLinearscale(d[chosenyAxis]))
-    .attr("r", 12)
-    .attr("opacity",".5");
+    .attr("r", 15);
 
     //append text
-    var textGroup = chartGroup.selectAll("text")
+    var textGroup = chartGroup.selectAll(".stateText")
     .data(censusData)
     .enter()
     .append("text")
     .classed("stateText", true)
     .attr("x", d=> xLinearscale(d[chosenxAxis]))
     .attr("y", d=> yLinearscale(d[chosenyAxis]))
-    .attr("dy",3)
-    .text(function(d) {return d.abbr });
+    .attr("dy","3")
+    .attr("font-size", "10px")
+    .text(function(d) {return d.abbr});
 
     //create group for x labels
     var xLabelsGroup = chartGroup.append("g")
-    .attr("transform", `transform ${width}/2, ${height + 20 + margin.top}`);
+    .attr("transform", `translate(${width/2}, ${height + 20 + margin.top})`);
 
     //append poverty label
     var povertyLabel = xLabelsGroup.append("text")
     .classed("aText", true)
-    .classed("inactive", true)
+    .classed("active", true)
     .attr("x",0)
     .attr("y",20)
     .attr("value","poverty")
@@ -184,15 +195,56 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     .attr("transform","rotate(-90)")
     .attr("value","smokes")
     .text("Smokers (%)");
-
-
-
-
-
-    
-
-
-
-
 });
 
+//x axis event listener
+xLabelsGoup.selectAll("text")
+    .on("click", function(){
+    //get value for selection
+    var value = d3.select(this).attr("value");
+
+    //check for if value has the same axis
+    if (value != chosenxAxis){
+        chosenxAxis = value;
+
+        //update x scale
+        xLinearscale = xScale(censusData, chosenxAxis);
+
+        //update x asis
+        xAxis = modifyAxesX(xLinearscale, xAxis);
+
+        //update circles
+        circlesGroup = modifyCircles(circlesGroup, xLinearscale, chosenx);
+
+        //update text
+        textGroup = modifyText(textGroup, xLinearscale);
+        
+
+
+    }
+//x axis event listener
+yLabelsGroup.selectAll("text")
+.on("click", function(){
+    //get value for selection
+    var value = d3.select(this).attr("value");
+
+    //check for if value has the same axis
+    if (value != chosenyAxis){
+        chosenyAxis = value;
+
+        //update x scale
+        yLinearscale = yScale(censusData, chosenyAxis);
+
+        //update x asis
+        yAxis = modifyAxesX(yLinearscale, yAxis);
+
+        //update circles
+        circlesGroup = modifyCircles(circlesGroup, xLinearscale, chosenxAxis, yLinearscale, chosenyAxis);
+
+        //update text
+        textGroup = modifyText(textGroup, xLinearscale, chosenxAxis, yLinearscale, chosenyAxis);
+        
+
+    }
+})
+})
