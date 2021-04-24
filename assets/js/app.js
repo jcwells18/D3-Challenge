@@ -159,7 +159,7 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     .attr("x",0)
     .attr("y",20)
     .attr("value","poverty")
-    .text("Household Income");
+    .text("In Poverty (%)");
 
 
     //append age label
@@ -184,7 +184,7 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     .attr("dy", "1em")
     .attr("transform","rotate(-90)")
     .attr("value","healthcare")
-    .text("Healthcare");
+    .text("Lacks Healthcare");
 
     var smokingLabel = yLabelsGroup.append("text")
     .classed("aText", true)
@@ -194,7 +194,7 @@ d3.csv("./assets/data/data.csv").then(function(censusData){
     .attr("dy", "1em")
     .attr("transform","rotate(-90)")
     .attr("value","smokes")
-    .text("Smokers (%)");
+    .text("Smokes (%)");
 });
 
 //x axis event listener
@@ -222,7 +222,7 @@ xLabelsGoup.selectAll("text")
 
 
     }
-//x axis event listener
+//y axis event listener
 yLabelsGroup.selectAll("text")
 .on("click", function(){
     //get value for selection
